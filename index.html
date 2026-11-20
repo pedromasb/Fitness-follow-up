@@ -24,14 +24,6 @@
       --empty: #F1ECE6;
       --shadow: 0 1px 2px rgba(46, 42, 51, .04), 0 8px 24px rgba(46, 42, 51, .06);
 
-      --futbol: #A8E2BF;
-      --gym: #CBB6F2;
-      --padel: #FFC9A0;
-      --otro: #A9D6F2;
-      --futbol-ink: #2F7A52;
-      --gym-ink: #6A4BB0;
-      --padel-ink: #B0602A;
-      --otro-ink: #2E6E96;
 
       --accent: #F6B5C8;
       --accent-ink: #A23E62;
@@ -46,10 +38,6 @@
         --line: #35313B;
         --empty: #312D37;
         --shadow: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.25);
-        --futbol-ink: #A8E2BF;
-        --gym-ink: #CBB6F2;
-        --padel-ink: #FFC9A0;
-        --otro-ink: #A9D6F2;
         --accent-ink: #F6B5C8;
       }
     }
@@ -94,25 +82,24 @@
     .iconbtn:active { transform: scale(.92); }
     .iconbtn:disabled { opacity: .35; }
 
-    .types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .group-label { font-size: 12px; font-weight: 650; color: var(--muted); margin: 14px 2px 8px; }
+    .group-label:first-child { margin-top: 0; }
+    .types-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .type {
-      position: relative; border: 2px solid transparent; border-radius: 18px; padding: 16px 14px;
-      background: var(--empty); color: var(--text); font: inherit; text-align: left; cursor: pointer;
-      display: flex; align-items: center; gap: 12px; transition: transform .15s, background .2s, border-color .2s;
+      position: relative; border: 2px solid transparent; border-radius: 16px; padding: 12px 6px 10px;
+      background: var(--empty); color: var(--text); font: inherit; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform .15s, background .2s, border-color .2s;
     }
+    .type.on { background: var(--c); color: var(--ink); }
     .type:active { transform: scale(.97); }
-    .type .emoji { font-size: 26px; line-height: 1; }
-    .type .name { font-weight: 650; font-size: 16px; }
+    .type .emoji { font-size: 24px; line-height: 1; }
+    .type .name { font-weight: 650; font-size: 14px; }
     .type .check {
-      position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; border-radius: 50%;
+      position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border-radius: 50%;
       background: rgba(255,255,255,.7); display: grid; place-items: center; font-size: 12px; opacity: 0; transform: scale(.6);
       transition: opacity .2s, transform .2s; color: #2E2A33;
     }
     .type.on .check { opacity: 1; transform: scale(1); }
-    .type[data-type="futbol"].on { background: var(--futbol); color: #1F3D2C; }
-    .type[data-type="gym"].on { background: var(--gym); color: #33255A; }
-    .type[data-type="padel"].on { background: var(--padel); color: #5A3014; }
-    .type[data-type="otro"].on { background: var(--otro); color: #183B52; }
 
     .field { margin-top: 12px; }
     .field input, .field textarea {
@@ -171,10 +158,7 @@
     .item .body { flex: 1; min-width: 0; }
     .pills { display: flex; flex-wrap: wrap; gap: 6px; }
     .pill { font-size: 12px; font-weight: 650; padding: 4px 10px; border-radius: 99px; }
-    .pill.futbol { background: var(--futbol); color: #1F3D2C; }
-    .pill.gym { background: var(--gym); color: #33255A; }
-    .pill.padel { background: var(--padel); color: #5A3014; }
-    .pill.otro { background: var(--otro); color: #183B52; }
+    .pill { background: var(--c, var(--empty)); color: var(--ink, var(--text)); }
     .item .note { font-size: 14px; color: var(--muted); margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
     .empty-msg { color: var(--muted); font-size: 14px; text-align: center; padding: 12px 0; }
 
@@ -208,12 +192,7 @@
         <button class="iconbtn" id="next" aria-label="Día siguiente">›</button>
       </div>
 
-      <div class="types" id="types">
-        <button class="type" data-type="futbol"><span class="emoji">⚽</span><span class="name">Fútbol</span><span class="check">✓</span></button>
-        <button class="type" data-type="gym"><span class="emoji">🏋️</span><span class="name">Gym</span><span class="check">✓</span></button>
-        <button class="type" data-type="padel"><span class="emoji">🎾</span><span class="name">Pádel</span><span class="check">✓</span></button>
-        <button class="type" data-type="otro"><span class="emoji">✨</span><span class="name">Otro</span><span class="check">✓</span></button>
-      </div>
+      <div class="types" id="types"></div>
 
       <div class="field hidden" id="otherWrap">
         <input id="other" type="text" placeholder="¿Qué has hecho? (yoga, correr, natación…)" maxlength="40" />
@@ -239,12 +218,7 @@
           <div class="grid" id="grid"></div>
         </div>
       </div>
-      <div class="legend">
-        <span><i style="background:var(--futbol)"></i>Fútbol</span>
-        <span><i style="background:var(--gym)"></i>Gym</span>
-        <span><i style="background:var(--padel)"></i>Pádel</span>
-        <span><i style="background:var(--otro)"></i>Otro</span>
-      </div>
+      <div class="legend" id="legend"></div>
     </section>
 
     <section class="card">
@@ -274,14 +248,35 @@
   <script>
   (() => {
     const KEY = 'move.entries.v1';
-    const TYPES = {
-      futbol: { name: 'Fútbol', emoji: '⚽', color: 'var(--futbol)' },
-      gym:    { name: 'Gym',    emoji: '🏋️', color: 'var(--gym)' },
-      padel:  { name: 'Pádel',  emoji: '🎾', color: 'var(--padel)' },
-      otro:   { name: 'Otro',   emoji: '✨', color: 'var(--otro)' },
-    };
-    const ORDER = ['futbol', 'gym', 'padel', 'otro'];
     const $ = (id) => document.getElementById(id);
+    const TYPES = {
+      futbol:  { name: 'Fútbol',  emoji: '⚽', group: 'Deportes', c: '#A8E2BF', ink: '#1F3D2C' },
+      padel:   { name: 'Pádel',   emoji: '🎾', group: 'Deportes', c: '#FFC9A0', ink: '#5A3014' },
+      otro:    { name: 'Otro',    emoji: '✨', group: 'Deportes', c: '#A9D6F2', ink: '#183B52' },
+      pierna:  { name: 'Pierna',  emoji: '🦵', group: 'Gimnasio', c: '#CBB6F2', ink: '#33255A' },
+      biceps:  { name: 'Bíceps',  emoji: '💪', group: 'Gimnasio', c: '#F6B5C8', ink: '#5A2238' },
+      pecho:   { name: 'Pecho',   emoji: '🏋️', group: 'Gimnasio', c: '#FFE29A', ink: '#5A4610' },
+      triceps: { name: 'Tríceps', emoji: '🦾', group: 'Gimnasio', c: '#B9C7F5', ink: '#22305E' },
+      espalda: { name: 'Espalda', emoji: '🚣', group: 'Gimnasio', c: '#9EE0DA', ink: '#134A45' },
+      correr:  { name: 'Correr',  emoji: '🏃', group: 'Cardio',   c: '#FFB3A7', ink: '#5E2219' },
+      bici:    { name: 'Bici',    emoji: '🚴', group: 'Cardio',   c: '#D7EBA4', ink: '#3A4A12' },
+      // legacy category from the first version; kept so older entries still display
+      gym:     { name: 'Gym',     emoji: '🏋️', group: null,       c: '#DDD3CA', ink: '#3F3830' },
+    };
+    for (const t of Object.values(TYPES)) t.color = t.c;
+    const ORDER = Object.keys(TYPES);
+    const PICKABLE = ORDER.filter((x) => TYPES[x].group);
+    const tvars = (x) => `--c:${TYPES[x].c};--ink:${TYPES[x].ink}`;
+
+    // build chips + legend
+    {
+      const groups = [...new Set(PICKABLE.map((x) => TYPES[x].group))];
+      $('types').innerHTML = groups.map((g) => `<div class="group-label">${g}</div><div class="types-grid">` +
+        PICKABLE.filter((x) => TYPES[x].group === g).map((x) =>
+          `<button class="type" data-type="${x}" style="${tvars(x)}"><span class="emoji">${TYPES[x].emoji}</span><span class="name">${TYPES[x].name}</span><span class="check">✓</span></button>`
+        ).join('') + '</div>').join('');
+      $('legend').innerHTML = PICKABLE.map((x) => `<span><i style="background:${TYPES[x].c}"></i>${TYPES[x].name}</span>`).join('');
+    }
 
     // ---------- storage ----------
     let data = {};
@@ -464,7 +459,7 @@
       const counts = Object.fromEntries(ORDER.map((x) => [x, 0]));
       active.filter((k) => k >= y0).forEach((k) => data[k].types.forEach((x) => counts[x]++));
       const max = Math.max(1, ...Object.values(counts));
-      $('bars').innerHTML = ORDER.map((x) => `
+      $('bars').innerHTML = ORDER.filter((x) => TYPES[x].group || counts[x]).map((x) => `
         <div class="bar">
           <span>${TYPES[x].emoji} ${TYPES[x].name}</span>
           <div class="track"><div class="fill" style="width:${(counts[x] / max) * 100}%;background:${TYPES[x].color}"></div></div>
@@ -479,7 +474,7 @@
       if (!keys.length) { $('recent').innerHTML = '<div class="empty-msg">Aún no hay entrenamientos. ¡Marca el de hoy! 💪</div>'; return; }
       $('recent').innerHTML = keys.map((k) => {
         const e = data[k], d = fromKey(k);
-        const pills = (e.types || []).map((x) => `<span class="pill ${x}">${TYPES[x].emoji} ${x === 'otro' && e.other ? esc(e.other) : TYPES[x].name}</span>`).join('');
+        const pills = (e.types || []).map((x) => `<span class="pill" style="${tvars(x)}">${TYPES[x].emoji} ${x === 'otro' && e.other ? esc(e.other) : TYPES[x].name}</span>`).join('');
         return `<div class="item" data-k="${k}">
           <div class="date"><b>${d.getDate()}</b><span>${fmtMonth.format(d).replace('.', '')}</span></div>
           <div class="body"><div class="pills">${pills || '<span class="pill" style="background:var(--empty)">Descanso</span>'}</div>
