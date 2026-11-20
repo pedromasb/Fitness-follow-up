@@ -3,6 +3,7 @@
   "short_name": "Move",
   "description": "Seguimiento diario de tu ejercicio",
   "lang": "es",
+  "id": "./?app=move",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
