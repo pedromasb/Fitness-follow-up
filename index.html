@@ -51,7 +51,7 @@
       font-size: 16px;
       line-height: 1.4;
       -webkit-font-smoothing: antialiased;
-      padding: env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px);
+      padding: env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 96px);
     }
     .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
 
@@ -162,10 +162,52 @@
     .item .note { font-size: 14px; color: var(--muted); margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
     .empty-msg { color: var(--muted); font-size: 14px; text-align: center; padding: 12px 0; }
 
+    .view.hidden { display: none; }
+    .tabbar {
+      position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom) + 12px);
+      display: flex; gap: 4px; padding: 6px; border-radius: 999px; z-index: 10;
+      background: color-mix(in srgb, var(--card) 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow), 0 0 0 1px var(--line);
+    }
+    .tabbar button {
+      border: none; background: transparent; color: var(--muted); font: inherit; font-size: 14px; font-weight: 650;
+      padding: 10px 18px; border-radius: 999px; cursor: pointer; display: flex; white-space: nowrap; align-items: center; gap: 6px; transition: background .2s, color .2s;
+    }
+    .tabbar button.on { background: var(--accent); color: #5A2238; }
+
+    .seg { display: flex; gap: 4px; background: var(--empty); padding: 4px; border-radius: 999px; margin-bottom: 14px; }
+    .seg button { flex: 1; border: none; background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 650; padding: 7px 0; border-radius: 999px; cursor: pointer; }
+    .seg button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .chart-wrap { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .chart-wrap svg { display: block; width: 100%; height: 240px; overflow: visible; }
+    .chart-wrap .gridline { stroke: var(--line); stroke-width: 1; }
+    .chart-wrap .axis { fill: var(--muted); font-size: 10px; }
+    .chart-wrap .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; transition: opacity .2s; }
+    .chart-wrap .cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+    .chart-wrap .dot { stroke: var(--card); stroke-width: 2; }
+    .tip {
+      position: absolute; top: 0; pointer-events: none; background: var(--card); border-radius: 14px; padding: 10px 12px;
+      box-shadow: var(--shadow), 0 0 0 1px var(--line); font-size: 12px; min-width: 130px; z-index: 2;
+    }
+    .tip .d { color: var(--muted); margin-bottom: 6px; }
+    .tip .r { display: flex; align-items: center; gap: 6px; line-height: 1.6; }
+    .tip .r i { width: 10px; height: 3px; border-radius: 2px; flex: none; }
+    .tip .r b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); background: transparent; color: var(--text);
+      font: inherit; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: opacity .2s;
+    }
+    .chip i { width: 10px; height: 10px; border-radius: 50%; }
+    .chip.off { opacity: .4; }
+    .chip.off i { background: transparent !important; box-shadow: inset 0 0 0 1.5px var(--muted); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .empty-chart { color: var(--muted); font-size: 14px; text-align: center; padding: 60px 0; }
+
     footer { display: flex; justify-content: center; gap: 20px; padding: 8px 0 16px; }
 
     .toast {
-      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px); transform: translate(-50%, 20px);
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 84px); transform: translate(-50%, 20px);
       background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 99px; font-size: 14px;
       opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
     }
@@ -182,6 +224,7 @@
       <div class="streak" id="streak">🔥 0 días</div>
     </header>
 
+    <div class="view" id="viewDiario">
     <section class="card" id="editor">
       <div class="daynav">
         <button class="iconbtn" id="prev" aria-label="Día anterior">‹</button>
@@ -222,6 +265,13 @@
     </section>
 
     <section class="card">
+      <h2>Últimos entrenamientos</h2>
+      <div class="list" id="recent"></div>
+    </section>
+    </div>
+
+    <div class="view hidden" id="viewStats">
+    <section class="card">
       <h2>Resumen</h2>
       <div class="stats">
         <div class="stat"><b id="sWeek">0</b><span>esta semana</span></div>
@@ -232,17 +282,27 @@
     </section>
 
     <section class="card">
-      <h2>Últimos entrenamientos</h2>
-      <div class="list" id="recent"></div>
+      <h2>Evolución acumulada</h2>
+      <div class="seg" id="range">
+        <button data-r="30">1M</button><button data-r="90">3M</button><button data-r="182">6M</button><button data-r="365">1A</button><button data-r="all">Todo</button>
+      </div>
+      <div class="chart-wrap" id="chartWrap"></div>
+      <div class="chips" id="chips"></div>
+      <p class="hint">Toca una categoría para verla sola · desliza sobre la gráfica para ver cada día</p>
     </section>
-
     <footer>
       <button class="linkbtn" id="exportBtn">Exportar copia</button>
       <button class="linkbtn" id="importBtn">Importar copia</button>
       <input type="file" id="importFile" accept="application/json,.json" class="hidden" />
     </footer>
+    </div>
+
   </div>
 
+  <nav class="tabbar" id="tabbar">
+    <button data-v="viewDiario" class="on">📝 Diario</button>
+    <button data-v="viewStats">📈 Estadísticas</button>
+  </nav>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -250,18 +310,19 @@
     const KEY = 'move.entries.v1';
     const $ = (id) => document.getElementById(id);
     const TYPES = {
-      futbol:  { name: 'Fútbol',  emoji: '⚽', group: 'Deportes', c: '#A8E2BF', ink: '#1F3D2C' },
-      padel:   { name: 'Pádel',   emoji: '🎾', group: 'Deportes', c: '#FFC9A0', ink: '#5A3014' },
-      otro:    { name: 'Otro',    emoji: '✨', group: 'Deportes', c: '#A9D6F2', ink: '#183B52' },
-      pierna:  { name: 'Pierna',  emoji: '🦵', group: 'Gimnasio', c: '#CBB6F2', ink: '#33255A' },
-      biceps:  { name: 'Bíceps',  emoji: '💪', group: 'Gimnasio', c: '#F6B5C8', ink: '#5A2238' },
-      pecho:   { name: 'Pecho',   emoji: '🏋️', group: 'Gimnasio', c: '#FFE29A', ink: '#5A4610' },
-      triceps: { name: 'Tríceps', emoji: '🦾', group: 'Gimnasio', c: '#B9C7F5', ink: '#22305E' },
-      espalda: { name: 'Espalda', emoji: '🚣', group: 'Gimnasio', c: '#9EE0DA', ink: '#134A45' },
-      correr:  { name: 'Correr',  emoji: '🏃', group: 'Cardio',   c: '#FFB3A7', ink: '#5E2219' },
-      bici:    { name: 'Bici',    emoji: '🚴', group: 'Cardio',   c: '#D7EBA4', ink: '#3A4A12' },
+      futbol:  { name: 'Fútbol',  emoji: '⚽', group: 'Deportes', c: '#A8E2BF', ink: '#1F3D2C', line: '#3FB37A' },
+      padel:   { name: 'Pádel',   emoji: '🎾', group: 'Deportes', c: '#FFC9A0', ink: '#5A3014', line: '#F08A3C' },
+      otro:    { name: 'Otro',    emoji: '✨', group: 'Deportes', c: '#A9D6F2', ink: '#183B52', line: '#3D9BD9' },
+      pierna:  { name: 'Pierna',  emoji: '🦵', group: 'Gimnasio', c: '#CBB6F2', ink: '#33255A', line: '#8E6BD9' },
+      biceps:  { name: 'Bíceps',  emoji: '💪', group: 'Gimnasio', c: '#F6B5C8', ink: '#5A2238', line: '#E0628A' },
+      pecho:   { name: 'Pecho',   emoji: '🏋️', group: 'Gimnasio', c: '#FFE29A', ink: '#5A4610', line: '#D9A400' },
+      triceps: { name: 'Tríceps', emoji: '🦾', group: 'Gimnasio', c: '#B9C7F5', ink: '#22305E', line: '#5B78E0' },
+      espalda: { name: 'Espalda', emoji: '🚣', group: 'Gimnasio', c: '#9EE0DA', ink: '#134A45', line: '#23A99C' },
+      hombro:  { name: 'Hombro',  emoji: '🤸', group: 'Gimnasio', c: '#E8C1EE', ink: '#4A1F52', line: '#B85CC4' },
+      correr:  { name: 'Correr',  emoji: '🏃', group: 'Cardio',   c: '#FFB3A7', ink: '#5E2219', line: '#E8604C' },
+      bici:    { name: 'Bici',    emoji: '🚴', group: 'Cardio',   c: '#D7EBA4', ink: '#3A4A12', line: '#8DB830' },
       // legacy category from the first version; kept so older entries still display
-      gym:     { name: 'Gym',     emoji: '🏋️', group: null,       c: '#DDD3CA', ink: '#3F3830' },
+      gym:     { name: 'Gym',     emoji: '🏋️', group: null,       c: '#DDD3CA', ink: '#3F3830', line: '#A39486' },
     };
     for (const t of Object.values(TYPES)) t.color = t.c;
     const ORDER = Object.keys(TYPES);
@@ -529,8 +590,143 @@
       $('hello').textContent = h < 6 ? 'Buenas noches 🌙' : h < 13 ? 'Buenos días ☀️' : h < 21 ? 'Buenas tardes 👋' : 'Buenas noches 🌙';
     }
 
+    // ---------- tabs ----------
+    let view = 'viewDiario';
+    try { if (localStorage.getItem('move.view') === 'viewStats') view = 'viewStats'; } catch {}
+    function showView(v) {
+      view = v;
+      document.querySelectorAll('.view').forEach((el) => el.classList.toggle('hidden', el.id !== v));
+      document.querySelectorAll('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+      try { localStorage.setItem('move.view', v); } catch {}
+      if (v === 'viewStats') renderChart();
+      if (v === 'viewDiario') renderHeatmap(true);
+      window.scrollTo(0, 0);
+    }
+    $('tabbar').addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b) showView(b.dataset.v); });
+
+    // ---------- cumulative chart ----------
+    let range = '90';
+    try { range = localStorage.getItem('move.range') || '90'; } catch {}
+    let hidden = new Set();
+    const NS = 'http://www.w3.org/2000/svg';
+    const fmtShort = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
+    const fmtMonY = new Intl.DateTimeFormat('es-ES', { month: 'short', year: '2-digit' });
+
+    $('range').addEventListener('click', (ev) => {
+      const b = ev.target.closest('button'); if (!b) return;
+      range = b.dataset.r; try { localStorage.setItem('move.range', range); } catch {}
+      renderChart();
+    });
+    $('chips').addEventListener('click', (ev) => {
+      const b = ev.target.closest('.chip'); if (!b) return;
+      const t = b.dataset.t, shown = chartSeries().filter((x) => !hidden.has(x));
+      if (t === '*') hidden.clear();
+      else if (shown.length > 1 && !hidden.size) hidden = new Set(chartSeries().filter((x) => x !== t)); // first tap: solo
+      else if (hidden.has(t)) hidden.delete(t);
+      else if (shown.length > 1) hidden.add(t);
+      renderChart();
+    });
+
+    function chartSeries() {
+      const used = new Set(Object.values(data).flatMap((e) => e.types || []));
+      return ORDER.filter((x) => TYPES[x].group || used.has(x));
+    }
+
+    function niceMax(v) { // 4 gridlines, always whole-number steps
+      const raw = v / 4;
+      if (raw <= 1) return 4;
+      const p = Math.pow(10, Math.floor(Math.log10(raw)));
+      for (const m of [1, 2, 5, 10]) if (p * m >= raw) return p * m * 4;
+      return Math.ceil(raw) * 4;
+    }
+
+    function renderChart() {
+      document.querySelectorAll('#range button').forEach((b) => b.classList.toggle('on', b.dataset.r === range));
+      const series = chartSeries();
+      const wrap = $('chartWrap');
+      const t = today();
+      const keys = Object.keys(data).filter(isActive).sort();
+      let start;
+      if (range === 'all') start = keys.length ? fromKey(keys[0]) : addDays(t, -29);
+      else start = addDays(t, -(Number(range) - 1));
+      if ((t - start) / 86400000 < 6) start = addDays(t, -6);
+      const days = [];
+      for (let d = new Date(start); d <= t; d = addDays(d, 1)) days.push(keyOf(d));
+      const cum = {};
+      for (const x of series) { let c = 0; cum[x] = days.map((k) => (c += isActive(k) && data[k].types.includes(x) ? 1 : 0)); }
+
+      // chips
+      $('chips').innerHTML = series.map((x) => {
+        const tot = cum[x][cum[x].length - 1];
+        return `<button class="chip${hidden.has(x) ? ' off' : ''}" data-t="${x}"><i style="background:${TYPES[x].line}"></i>${TYPES[x].name} <span style="color:var(--muted)">${tot}</span></button>`;
+      }).join('') + (hidden.size ? '<button class="chip" data-t="*">Todas</button>' : '');
+
+      const vis = series.filter((x) => !hidden.has(x));
+      const maxV = Math.max(0, ...vis.map((x) => cum[x][cum[x].length - 1]));
+      if (!maxV) { wrap.innerHTML = '<div class="empty-chart">Sin entrenamientos en este periodo</div>'; return; }
+
+      const W = Math.max(280, wrap.clientWidth || 320), H = 240, L = 30, R = 10, T = 10, B = 24;
+      const iw = W - L - R, ih = H - T - B, n = days.length;
+      const yMax = niceMax(maxV);
+      const X = (i) => L + (n === 1 ? iw : (i / (n - 1)) * iw);
+      const Y = (v) => T + ih - (v / yMax) * ih;
+      let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Recuento acumulado por categoría">`;
+      for (let i = 0; i <= 4; i++) {
+        const v = (yMax / 4) * i, y = Y(v);
+        svg += `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text class="axis" x="${L - 6}" y="${y + 3}" text-anchor="end">${Math.round(v)}</text>`;
+      }
+      // x labels: month starts, thinned to fit
+      const marks = days.map((k, i) => [k, i]).filter(([k]) => k.endsWith('-01'));
+      const every = Math.max(1, Math.ceil(marks.length / Math.max(1, Math.floor(iw / 48))));
+      const spanYears = days[0].slice(0, 4) !== days[n - 1].slice(0, 4) && range === 'all';
+      if (marks.length >= 2) {
+        marks.forEach(([k, i], j) => { if (j % every === 0) svg += `<text class="axis" x="${X(i)}" y="${H - 6}" text-anchor="middle">${(spanYears ? fmtMonY : fmtMonth).format(fromKey(k)).replace('.', '')}</text>`; });
+      } else {
+        for (let j = 0; j < 4; j++) { const i = Math.round((j / 3) * (n - 1)); svg += `<text class="axis" x="${X(i)}" y="${H - 6}" text-anchor="${j === 0 ? 'start' : j === 3 ? 'end' : 'middle'}">${fmtShort.format(fromKey(days[i])).replace('.', '')}</text>`; }
+      }
+      // lines: step shape so each session is a visible jump
+      for (const x of vis) {
+        const a = cum[x];
+        let dPath = `M${X(0)},${Y(a[0])}`;
+        for (let i = 1; i < n; i++) dPath += a[i] !== a[i - 1] ? `L${X(i)},${Y(a[i - 1])}L${X(i)},${Y(a[i])}` : '';
+        dPath += `L${X(n - 1)},${Y(a[n - 1])}`;
+        svg += `<path class="series" d="${dPath}" stroke="${TYPES[x].line}"/>`;
+      }
+      svg += `<g id="hover" style="display:none"><line class="cross" y1="${T}" y2="${T + ih}"/></g></svg>`;
+      wrap.innerHTML = svg + '<div class="tip" id="tip" style="display:none"></div>';
+
+      const svgEl = wrap.querySelector('svg'), hov = svgEl.querySelector('#hover'), tip = $('tip');
+      const move = (ev) => {
+        const r = svgEl.getBoundingClientRect();
+        const px = ((ev.clientX - r.left) / r.width) * W;
+        const i = Math.max(0, Math.min(n - 1, Math.round(((px - L) / iw) * (n - 1))));
+        const x = X(i);
+        hov.style.display = '';
+        hov.querySelector('line').setAttribute('x1', x); hov.querySelector('line').setAttribute('x2', x);
+        hov.querySelectorAll('circle').forEach((c) => c.remove());
+        const rows = vis.map((s) => [s, cum[s][i]]).sort((a, b) => b[1] - a[1]);
+        for (const [s, v] of rows) {
+          const c = document.createElementNS(NS, 'circle');
+          c.setAttribute('class', 'dot'); c.setAttribute('cx', x); c.setAttribute('cy', Y(v)); c.setAttribute('r', 4); c.setAttribute('fill', TYPES[s].line);
+          hov.appendChild(c);
+        }
+        tip.innerHTML = `<div class="d">${fmtLong.format(fromKey(days[i]))}</div>` +
+          rows.map(([s, v]) => `<div class="r"><i style="background:${TYPES[s].line}"></i>${TYPES[s].name}<b>${v}</b></div>`).join('');
+        tip.style.display = '';
+        const sx = (x / W) * r.width, tw = tip.offsetWidth;
+        tip.style.left = (sx + 14 + tw > r.width ? Math.max(0, sx - 14 - tw) : sx + 14) + 'px';
+      };
+      const leave = () => { hov.style.display = 'none'; tip.style.display = 'none'; };
+      svgEl.addEventListener('pointermove', move);
+      svgEl.addEventListener('pointerdown', move);
+      svgEl.addEventListener('pointerleave', leave);
+      svgEl.addEventListener('pointercancel', leave);
+    }
+    let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => view === 'viewStats' && renderChart(), 150); });
+
     function renderAll(scroll) {
       greet(); renderEditor(); renderHeatmap(scroll); renderStats(); renderRecent();
+      if (view === 'viewStats') renderChart();
     }
 
     // refresh when coming back to the app on a new day
@@ -543,6 +739,7 @@
     });
 
     renderAll(true);
+    showView(view);
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
